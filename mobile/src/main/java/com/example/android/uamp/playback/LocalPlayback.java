@@ -26,6 +26,8 @@ import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.text.TextUtils;
 
+import com.danikula.videocache.HttpProxyCacheServer;
+import com.danikula.videocache.file.FileNameGenerator;
 import com.example.android.uamp.MusicService;
 import com.example.android.uamp.model.MusicProvider;
 import com.example.android.uamp.model.MusicProviderSource;
@@ -49,6 +51,9 @@ import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
+
+import java.net.MalformedURLException;
+import java.net.URL;
 
 import static android.support.v4.media.session.MediaSessionCompat.QueueItem;
 import static com.google.android.exoplayer2.C.CONTENT_TYPE_MUSIC;
@@ -87,6 +92,7 @@ public final class LocalPlayback implements Playback {
     private final AudioManager mAudioManager;
     private SimpleExoPlayer mExoPlayer;
     private final ExoPlayerEventListener mEventListener = new ExoPlayerEventListener();
+    private final HttpProxyCacheServer mProxyCacheServer;
 
     // Whether to return STATE_NONE or STATE_STOPPED when mExoPlayer is null;
     private boolean mExoPlayerNullIsStopped =  false;
@@ -121,6 +127,21 @@ public final class LocalPlayback implements Playback {
         this.mWifiLock =
                 ((WifiManager) applicationContext.getSystemService(Context.WIFI_SERVICE))
                         .createWifiLock(WifiManager.WIFI_MODE_FULL, "uAmp_lock");
+        mProxyCacheServer = new HttpProxyCacheServer.Builder(mContext)
+                .maxCacheSize(2L * 1024 * 1024 * 1024) // 2 Gb for cache
+                .fileNameGenerator(new FileNameGenerator() {
+                    @Override
+                    public String generate(String url) {
+                        String[] segments;
+                        try {
+                            segments = new URL(url).getPath().split("/");
+                        } catch (MalformedURLException e) {
+                            segments = url.split("\\?")[0].split("/");
+                        }
+                        return segments[segments.length-1];
+                    }
+                })
+                .build();
     }
 
     @Override
@@ -205,7 +226,7 @@ public final class LocalPlayback implements Playback {
             if (source != null) {
                 source = source.replaceAll(" ", "%20"); // Escape spaces for URLs
             }
-
+            //source = mProxyCacheServer.getProxyUrl(source);
             if (mExoPlayer == null) {
                 mExoPlayer =
                         ExoPlayerFactory.newSimpleInstance(

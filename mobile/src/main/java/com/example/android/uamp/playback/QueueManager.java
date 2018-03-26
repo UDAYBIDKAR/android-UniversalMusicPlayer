@@ -162,6 +162,10 @@ public class QueueManager {
         return mPlayingQueue.size();
     }
 
+    public int getCurrentItemIndex() {
+        return mCurrentIndex;
+    }
+
     protected void setCurrentQueue(String title, List<MediaSessionCompat.QueueItem> newQueue) {
         setCurrentQueue(title, newQueue, null);
     }

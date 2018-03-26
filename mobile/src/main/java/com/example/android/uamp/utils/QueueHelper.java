@@ -62,6 +62,8 @@ public class QueueHelper {
             tracks = musicProvider.getMusicsByGenre(categoryValue);
         } else if (categoryType.equals(MEDIA_ID_MUSICS_BY_SEARCH)) {
             tracks = musicProvider.searchMusicBySongTitle(categoryValue);
+        } else {
+            tracks = musicProvider.getMusicsByTime(categoryType, categoryValue);
         }
 
         if (tracks == null) {

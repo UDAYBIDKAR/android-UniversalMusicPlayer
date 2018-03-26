@@ -30,6 +30,8 @@ import com.example.android.uamp.utils.LogHelper;
 import com.example.android.uamp.utils.MediaIDHelper;
 import com.example.android.uamp.utils.WearHelper;
 
+import java.util.Random;
+
 /**
  * Manage the interactions among the container service, the queue manager and the actual playback.
  */
@@ -185,6 +187,25 @@ public class PlaybackManager implements Playback.Callback {
         return actions;
     }
 
+    private int getSeekBy() {
+        int queueSize = mQueueManager.getCurrentQueueSize();
+        int currentIndex = mQueueManager.getCurrentItemIndex();
+        int direction = new Random().nextInt(2) == 1 ? 1 : -1;
+        if (currentIndex == 0) {
+            direction = 1; //Forward
+        } else if (currentIndex == (queueSize - 1)) {
+            direction = -1; //Backward
+        }
+
+        int seekBy ;
+        if (direction == -1) {
+            seekBy = -1 * (new Random().nextInt(currentIndex) + 1);
+        } else {
+            seekBy = new Random().nextInt(queueSize - currentIndex - 1) + 1;
+        }
+        return seekBy;
+    }
+
     /**
      * Implementation of the Playback.Callback interface
      */
@@ -192,7 +213,8 @@ public class PlaybackManager implements Playback.Callback {
     public void onCompletion() {
         // The media player finished playing the current song, so we go ahead
         // and start the next.
-        if (mQueueManager.skipQueuePosition(1)) {
+
+        if (mQueueManager.skipQueuePosition(getSeekBy())) {
             handlePlayRequest();
             mQueueManager.updateMetadata();
         } else {
@@ -307,7 +329,7 @@ public class PlaybackManager implements Playback.Callback {
         @Override
         public void onSkipToNext() {
             LogHelper.d(TAG, "skipToNext");
-            if (mQueueManager.skipQueuePosition(1)) {
+            if (mQueueManager.skipQueuePosition(getSeekBy())) {
                 handlePlayRequest();
             } else {
                 handleStopRequest("Cannot skip");

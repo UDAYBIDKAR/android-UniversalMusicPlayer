@@ -3,4 +3,5 @@
 /.idea
 .DS_Store
 /build
+/mobile/src/main/res/raw/songs.json
 *.iml
