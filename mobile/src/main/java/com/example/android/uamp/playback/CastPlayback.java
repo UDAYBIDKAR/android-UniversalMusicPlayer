@@ -315,11 +315,15 @@ public class CastPlayback implements Playback {
     }
 
     private class CastMediaClientListener implements RemoteMediaClient.Listener {
+        private boolean sentRemoteMediaRequest = false;
 
         @Override
         public void onMetadataUpdated() {
             LogHelper.d(TAG, "RemoteMediaClient.onMetadataUpdated");
-            setMetadataFromRemote();
+            if (!sentRemoteMediaRequest) {
+                setMetadataFromRemote();
+            }
+            sentRemoteMediaRequest = false;
         }
 
         @Override
@@ -330,6 +334,7 @@ public class CastPlayback implements Playback {
 
         @Override
         public void onSendingRemoteMediaRequest() {
+            sentRemoteMediaRequest = true;
         }
 
         @Override
