@@ -578,7 +578,7 @@ public class MusicProvider {
             MediaMetadataCompat.Builder builder = new MediaMetadataCompat.Builder();
             builder.putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, song.id)
                     //.putString(MusicProviderSource.CUSTOM_METADATA_TRACK_SOURCE, song.url.replace("?dl=0", "?dl=1"))
-                    .putString(MusicProviderSource.CUSTOM_METADATA_TRACK_SOURCE, "http://http://192.168.0.11//shares/data/classical/songs/" + song.id + ".mp3")
+                    .putString(MusicProviderSource.CUSTOM_METADATA_TRACK_SOURCE, "http://readyshare.routerlogin.net/shares/data/classical/songs/" + song.id + ".mp3")
                     .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, song.album)
                     .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, song.duration)
                     .putString(MediaMetadataCompat.METADATA_KEY_GENRE, song.raaga == null ? "Hindustani Classical" : song.raaga)
