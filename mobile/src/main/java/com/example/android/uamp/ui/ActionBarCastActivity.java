@@ -32,7 +32,9 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 
+import com.example.android.uamp.Preferences;
 import com.example.android.uamp.R;
 import com.example.android.uamp.utils.LogHelper;
 import com.google.android.gms.cast.framework.CastButtonFactory;
@@ -64,7 +66,8 @@ public abstract class ActionBarCastActivity extends AppCompatActivity {
     private Toolbar mToolbar;
     private ActionBarDrawerToggle mDrawerToggle;
     private DrawerLayout mDrawerLayout;
-
+    private TextView musicSource;
+    private View navigationHeaderView;
     private boolean mToolbarInitialized;
 
     private int mItemToOpenWhenDrawerCloses = -1;
@@ -267,7 +270,26 @@ public abstract class ActionBarCastActivity extends AppCompatActivity {
                 throw new IllegalStateException("Layout requires a NavigationView " +
                         "with id 'nav_view'");
             }
-
+            navigationHeaderView = navigationView.getHeaderView(0);
+            musicSource = navigationHeaderView.findViewById(R.id.music_source);
+            if (Preferences.isMusicSourceLocal(getApplicationContext())) {
+                musicSource.setText(R.string.source_local);
+            } else {
+                musicSource.setText(R.string.source_remote);
+            }
+            navigationHeaderView.setLongClickable(true);
+            navigationHeaderView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    Preferences.toggleMusicSource(getApplicationContext());
+                    if (Preferences.isMusicSourceLocal(getApplicationContext())) {
+                        musicSource.setText(R.string.source_local);
+                    } else {
+                        musicSource.setText(R.string.source_remote);
+                    }
+                    return true;
+                }
+            });
             // Create an ActionBarDrawerToggle that will handle opening/closing of the drawer:
             mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
                 mToolbar, R.string.open_content_drawer, R.string.close_content_drawer);

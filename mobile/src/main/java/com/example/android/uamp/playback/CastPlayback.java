@@ -59,7 +59,6 @@ public class CastPlayback implements Playback {
     private Callback mCallback;
     private long mCurrentPosition;
     private String mCurrentMediaId;
-    private int mLastMediaStatus;
 
     public CastPlayback(MusicProvider musicProvider, Context context) {
         mMusicProvider = musicProvider;
@@ -204,7 +203,7 @@ public class CastPlayback implements Playback {
         customData.put(ITEM_ID, mediaId);
         MediaInfo media = toCastMediaMetadata(track, customData);
         mRemoteMediaClient.load(media, autoPlay, mCurrentPosition, customData);
-        mLastMediaStatus = MediaStatus.IDLE_REASON_NONE;
+        mIdleReason = MediaStatus.IDLE_REASON_NONE;
     }
 
     /**
@@ -253,6 +252,7 @@ public class CastPlayback implements Playback {
         // This can happen when the app was either restarted/disconnected + connected, or if the
         // app joins an existing session while the Chromecast was playing a queue.
         try {
+            LogHelper.d(TAG, "Entered setMetadataFromRemote");
             MediaInfo mediaInfo = mRemoteMediaClient.getMediaInfo();
             if (mediaInfo == null) {
                 return;
@@ -262,7 +262,11 @@ public class CastPlayback implements Playback {
             if (customData != null && customData.has(ITEM_ID)) {
                 String remoteMediaId = customData.getString(ITEM_ID);
                 if (!TextUtils.equals(mCurrentMediaId, remoteMediaId)) {
-                    mCurrentMediaId = remoteMediaId;
+                    // mCurrentMediaId = remoteMediaId;              // EVEN IF mCurrentMediaId has already been updated to the new selected item,
+                    // remoteMediaId does not seem to have been updated somehow, so this always
+                    // replaces the new selected item with old one (or some random one)
+                    remoteMediaId = mCurrentMediaId;            // Current workaround is to simply disregard remoteMediaId
+                    // and to use mCurrentMediaId always (once updated on new item selection)
                     if (mCallback != null) {
                         mCallback.setCurrentMediaId(remoteMediaId);
                     }
@@ -275,6 +279,7 @@ public class CastPlayback implements Playback {
 
     }
 
+    private int mIdleReason;
     private void updatePlaybackState() {
         int status = mRemoteMediaClient.getPlayerState();
         int idleReason = mRemoteMediaClient.getIdleReason();
@@ -284,10 +289,7 @@ public class CastPlayback implements Playback {
         // Convert the remote playback states to media playback states.
         switch (status) {
             case MediaStatus.PLAYER_STATE_IDLE:
-                if (idleReason == MediaStatus.IDLE_REASON_FINISHED
-                        && (mLastMediaStatus == MediaStatus.PLAYER_STATE_BUFFERING
-                        || mLastMediaStatus == MediaStatus.PLAYER_STATE_PLAYING
-                        || mLastMediaStatus == MediaStatus.PLAYER_STATE_PAUSED)) {
+                if (idleReason == MediaStatus.IDLE_REASON_FINISHED && mIdleReason == MediaStatus.IDLE_REASON_FINISHED) {
                     if (mCallback != null) {
                         mCallback.onCompletion();
                     }
@@ -297,7 +299,7 @@ public class CastPlayback implements Playback {
                 mPlaybackState = PlaybackStateCompat.STATE_BUFFERING;
                 if (mCallback != null) {
                     mCallback.onPlaybackStatusChanged(mPlaybackState);
-                    mLastMediaStatus = MediaStatus.PLAYER_STATE_BUFFERING;
+                    mIdleReason = MediaStatus.IDLE_REASON_FINISHED;
                 }
                 break;
             case MediaStatus.PLAYER_STATE_PLAYING:
@@ -305,7 +307,7 @@ public class CastPlayback implements Playback {
                 setMetadataFromRemote();
                 if (mCallback != null) {
                     mCallback.onPlaybackStatusChanged(mPlaybackState);
-                    mLastMediaStatus = MediaStatus.PLAYER_STATE_PLAYING;
+                    mIdleReason = MediaStatus.IDLE_REASON_FINISHED;
                 }
                 break;
             case MediaStatus.PLAYER_STATE_PAUSED:
@@ -313,7 +315,6 @@ public class CastPlayback implements Playback {
                 setMetadataFromRemote();
                 if (mCallback != null) {
                     mCallback.onPlaybackStatusChanged(mPlaybackState);
-                    mLastMediaStatus = MediaStatus.PLAYER_STATE_PAUSED;
                 }
                 break;
             default: // case unknown

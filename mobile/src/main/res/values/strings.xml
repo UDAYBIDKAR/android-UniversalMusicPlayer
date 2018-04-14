@@ -16,7 +16,7 @@
   -->
 <resources>
 
-    <string name="app_name">Universal Music Player</string>
+    <string name="app_name">RaagRang</string>
     <string name="favorite">Favorite</string>
     <string name="error_no_metadata">Unable to retrieve metadata.</string>
     <string name="browse_genres">Genres</string>
@@ -56,4 +56,6 @@
     <!-- Notificaiton Channel -->
     <string name="notification_channel">UAMP_Channel_ID</string>
     <string name="notification_channel_description">Channel ID for UAMP</string>
+    <string name="source_local">Source - Local</string>
+    <string name="source_remote">Source - Remote</string>
 </resources>

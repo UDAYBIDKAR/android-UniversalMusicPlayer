@@ -16,6 +16,7 @@
   -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/navigation_header"
     android:layout_width="match_parent"
     android:layout_height="192dp"
     android:background="?attr/colorPrimaryDark"
@@ -28,6 +29,12 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/nav_header_username"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1"/>
+
+    <TextView
+        android:id="@+id/music_source"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1"/>
 
 </LinearLayout>

@@ -26,6 +26,7 @@ import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.MediaDescriptionCompat;
 import android.support.v4.media.MediaMetadataCompat;
 
+import com.example.android.uamp.Preferences;
 import com.example.android.uamp.R;
 import com.example.android.uamp.utils.LogHelper;
 import com.example.android.uamp.utils.MediaIDHelper;
@@ -576,9 +577,14 @@ public class MusicProvider {
         }
         for(SongData.Song song : mSongData.songs) {
             MediaMetadataCompat.Builder builder = new MediaMetadataCompat.Builder();
+            String source;
+            if (Preferences.isMusicSourceRemote(mContext)) {
+                source = song.url.replace("?dl=0", "?dl=1");
+            } else {
+                source = "http://readyshare.routerlogin.net/shares/data/classical/songs/" + song.id + ".mp3";
+            }
             builder.putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, song.id)
-                    //.putString(MusicProviderSource.CUSTOM_METADATA_TRACK_SOURCE, song.url.replace("?dl=0", "?dl=1"))
-                    .putString(MusicProviderSource.CUSTOM_METADATA_TRACK_SOURCE, "http://readyshare.routerlogin.net/shares/data/classical/songs/" + song.id + ".mp3")
+                    .putString(MusicProviderSource.CUSTOM_METADATA_TRACK_SOURCE, source)
                     .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, song.album)
                     .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, song.duration)
                     .putString(MediaMetadataCompat.METADATA_KEY_GENRE, song.raaga == null ? "Hindustani Classical" : song.raaga)
